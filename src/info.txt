@@ -1,0 +1,14 @@
+Bus:
+import {bus} from '../main.js'
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: this.user.email,
+    pass: functions.config().gmail.password
+  }
+});
+transporter.sendMail({
+  subject: this.user.name.split(' ')[0] + ' Door Request',
+  text: this.$refs.messageRef.value
+}).then().catch(e => {console.log(e)});
