@@ -91,11 +91,7 @@ export default {
     minimizeStyle(){
       if(this.minimize){
         return {
-
-          "transform-origin": "top",
-          height: "0",
-          padding: "0",
-          transform: "scaleY(0)",
+          display:'none'
         }
 
       }

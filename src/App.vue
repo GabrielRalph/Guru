@@ -7,6 +7,7 @@
         <Profile v-else-if = "profileMode" v-bind:user = "user"></Profile>
         <template v-else>
           <Doors v-bind:user = "user"></Doors>
+          <GM></GM>
           <Rent v-bind:user = "user"></Rent>
         </template>
       </div>
@@ -37,9 +38,11 @@ import Doors from './components/doors.vue'
 import Rent from './components/rent.vue'
 import Users from './components/users.vue'
 import Profile from './components/profile.vue'
+import GM from './components/GM.vue'
 
 export default {
   components: {
+    GM,
     Doors,
     Rent,
     Users,

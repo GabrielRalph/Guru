@@ -1,5 +1,5 @@
 <template>
-  <div v-if = "simple" class = "simple-rent" v-on:click = "expand" v-on:touchstart = "expand" v-bind:style = "minimizeStyle">
+  <div v-if = "simple" class = "simple-rent" :class = "classHandler" v-bind:style = "minimizeStyle">
     <div class = "simple-rent-day">
       <span>Next rent day</span>
       <h1>{{rentAmount}}</h1>
@@ -52,6 +52,13 @@ export default {
     }
   },
   computed: {
+    classHandler(){
+      return {
+        'semi-ergent': (this.nextRentDay == "Tommorow")||(this.nextRentDay == "Yesterday"),
+        ergent: (this.nextRentDay == "Today"),
+        normal: !((this.nextRentDay == "Today")||(this.nextRentDay == "Yesterday")||(this.nextRentDay == "Tommorow"))
+      }
+    },
     rentAmount(){
       return '$' + this.rentFreq*this.rentRate
     },
@@ -72,15 +79,40 @@ export default {
     minimizeStyle(){
       if(this.minimize){
         return {
-          "transform-origin": "top",
-          height: "0",
-          padding: "0",
-          transform: "scaleY(0)",
+          display: 'none'
         }
       }
     }
   },
   methods: {
+    dateUpdate(date){
+      var currentDate = new Date();
+      currentDate.setDate(currentDate.getDate());
+      var rentDay = new Date(date);
+      var difDays = (rentDay - currentDate)/(60*60*1000*24);
+      console.log(rentDay)
+      console.log(difDays);
+
+      if((difDays < 1)&&(difDays > 0)){
+        return "Today";
+      }else if((difDays < 2)&&(difDays > 1)){
+        return "Tommorow";
+      }else if((difDays < 0)&&(difDays > -1)){
+        return "Yesterday"
+      }else if((difDays < -1)&&(difDays > -4)){
+        return Math.ceil(difDays*-1) + " Days Past"
+      }else if(difDays <= -4){
+        rentDay.setDate(rentDay.getDate() + 14);
+        var date2 = String(rentDay)
+        fire.database.ref('stucco').update({nextRentDay: date2})
+        date2 = date2.split(' ');
+        return date2[1] + " " + date2[2]
+      }else{
+        var date2 = String(date)
+        date2 = date2.split(' ');
+        return date2[1] + " " + date2[2]
+      }
+    },
     expand(e){
       if(((e.type == 'click')&&!this.mode)||((e.type == 'touchstart')&&this.mode)){
         if(this.simple){
@@ -107,15 +139,15 @@ export default {
       fire.database.ref('users/'+this.user.uid+'/rentAccount').set(0)
       this.user.rentAccount = 0;
     }
-    var nextRentDay = fire.database.ref('stucco/nextRentDay'); // <-- Should change to back door on data base
+    var nextRentDay = fire.database.ref('stucco/nextRentDay');
     nextRentDay.on('value', (snapshot) => {
-      this.nextRentDay = snapshot.val();
+      this.nextRentDay = this.dateUpdate(snapshot.val());
     });
-    var rentRate = fire.database.ref('stucco/rentRate'); // <-- Should change to back door on data base
+    var rentRate = fire.database.ref('stucco/rentRate');
     rentRate.on('value', (snapshot) => {
       this.rentRate = snapshot.val();
     });
-    var rentFreq = fire.database.ref('stucco/rentFreq'); // <-- Should change to back door on data base
+    var rentFreq = fire.database.ref('stucco/rentFreq');
     rentFreq.on('value', (snapshot) => {
       this.rentFreq = snapshot.val();
     });
@@ -124,7 +156,21 @@ export default {
 </script>
 
 <style>
+
+
 @import url('https://fonts.googleapis.com/css?family=Roboto');
+
+.ergent{
+  border: 1vw solid #ff9105;
+  box-shadow: 0 0 2vw #ff9105;
+}
+.semi-ergent{
+  border: 1vw solid white;
+  box-shadow: 0 0 1vw white;
+}
+.normal{
+  border: 1vw solid rgba(0, 0, 0, 0);
+}
 .paypalww{
   width: 100%;
 }
@@ -142,7 +188,7 @@ export default {
   border-radius: 6vw;
   padding: 4vw 6vw;
   height: 12vh;
-  width: calc(100% - 12vw);
+  width: calc(100% - 12vw - 2*1vw);
   display: inline-block;
   float: left;
   line-height: 8vw;
@@ -154,7 +200,7 @@ export default {
   border-radius: 6vw;
   padding: 4vw 6vw;
   height: calc(100% - 2*4vw);
-  width: calc(100% - 12vw);
+  width: calc(100% - 12vw - 2*1vw);
   display: block;
   line-height: 8vw;
 }
